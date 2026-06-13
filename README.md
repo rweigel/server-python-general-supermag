@@ -1,17 +1,6 @@
 Create metadata for SuperMAG HAPI server
 
-See `python bin/catalog.py --help`
+`bin/inventory.py` creates [inventory.json](http://mag.gmu.edu/git-data/server-python-general-supermag/data/inventory.json), which contains an array
+with objects of station availability information. See `python inventory.py --help` for options.
 
-Example:
-
-```
-python bin/catalog.py --start 2000-01-01 --stop 2000-01-05
-```
-
-Output for full run, created using
-
-```
-python bin/catalog.py
-```
-
-is available at http://mag.gmu.edu/git-data/server-python-general-supermag/data
+`bin/catalog.py` creates the HAPI catalog response [catalog.json](http://mag.gmu.edu/git-data/server-python-general-supermag/data/catalog.json) based on `inventory.json`.
