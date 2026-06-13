@@ -1,8 +1,16 @@
 """
+Writes combined inventory file ../data/inventory.json based on content of files
+in ../data/inventories
+
 For usage, see:
   python inventory.py --help
-General usage: Get inventory on each day since 1970-01-01 through tomorrow.
-  python inventory.py
+
+Create combined inventory file using daily inventory from 1970-01-01 through tomorrow
+  Re-fetch daily inventory files
+    python inventory.py
+  Use cached inventory files when available
+    python inventory.py --no-update
+
 Short tests:
   python inventory.py --start 1970-01-01 --stop 1970-01-10
   python inventory.py --start 1970-01-01 --stop 1970-01-10 --no-update
@@ -10,7 +18,7 @@ Short tests:
 
 BASE_URL = "https://supermag.jhuapl.edu/lib/services/inventory.php"
 
-def create_inventory(start, stop, output_dir):
+def create_combined_inventory(start, stop, output_dir):
 
   import json
   import datetime as dt
@@ -125,7 +133,7 @@ def get_inventories(start, stop, output_dir='catalog', update=False, timeout=0.0
     if requested > 0 and delay > 0:
       time.sleep(delay)
 
-    payload = _get_one_inventory(current, timeout=timeout)
+    payload = _get_inventory(current, timeout=timeout)
     requested += 1
     stations = payload.get('stations', []) if isinstance(payload, dict) else []
     output_file = write_inventory_file(inventory_dir, current, payload)
@@ -135,7 +143,7 @@ def get_inventories(start, stop, output_dir='catalog', update=False, timeout=0.0
   return inventory_data
 
 
-def _get_one_inventory(start, timeout=5):
+def _get_inventory(start, timeout=5):
   import json
   from urllib.request import urlopen
 
@@ -242,4 +250,4 @@ if __name__ == '__main__':
     'delay': args.delay,
   }
 
-  create_inventory(args.start, args.stop, args.output_dir)
+  create_combined_inventory(args.start, args.stop, args.output_dir)
