@@ -1,10 +1,8 @@
 import logging
 
-format = '%(levelname)s:%(name)s:%(funcName)s(): %(message)s'
-format = '%(name)s:%(funcName)s(): %(message)s'
-logging.basicConfig(level=logging.DEBUG, format=format)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+from util import configure_logging, set_logging_level
+
+logger = configure_logging(__name__, level=logging.INFO)
 
 def get(url):
   import urllib3
@@ -149,7 +147,7 @@ def sm_data(userid, stationid, start, extent, baseline='yearly', delta='default'
   flagstring = '&'.join(flag_list)
 
   if extra_parameters:
-    extra_parameters_allowed = ['mlt', 'mag', 'geo', 'decl', 'sza']
+    extra_parameters_allowed = ['mlt', 'mag', 'geo', 'decl', 'sza', 'glat', 'glon']
     for parameter in extra_parameters:
       if parameter not in extra_parameters_allowed:
         raise ValueError(f"Invalid extra parameter: {parameter}. Allowed parameters are: {extra_parameters_allowed}")
@@ -181,7 +179,7 @@ def hapi_data(dataset_id, start, stop, parameters, header=False):
     baseline = 'default'
     delta = 'start'
 
-  parameters_known = ['Time', 'Field_Vector', 'mlt', 'mcolat', 'sza', 'decl']
+  parameters_known = ['Time', 'Field_Vector', 'mlt', 'mcolat', 'sza', 'decl', 'glon', 'glat']
 
   if parameters is not None:
     for parameter in parameters:
@@ -288,6 +286,11 @@ def parse_args():
     action='store_true',
     help='Include header row in output CSV'
   )
+  parser.add_argument(
+    '--debug',
+    action='store_true',
+    help='Enable debug logging.',
+  )
 
   args = parser.parse_args()
   if args.parameters:
@@ -302,6 +305,9 @@ def parse_args():
 if __name__ == "__main__":
   args = parse_args()
 
+  if args.debug:
+    set_logging_level(logging.DEBUG, [__name__])
+
   data = hapi_data(args.dataset, args.start, args.stop, args.parameters, header=args.header)
-  print("\nHAPI data response:")
-  print(data)
+  logger.debug("\nHAPI data response:")
+  print(data.rstrip())
