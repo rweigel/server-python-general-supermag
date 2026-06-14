@@ -28,6 +28,7 @@ def create_combined_inventory(start, stop, output_dir,
                               update_inventory=False,
                               update_locations=False,
                               station_id=None,
+                              partial_output=False,
                               timeout=5,
                               delay=0.0):
 
@@ -82,43 +83,45 @@ def create_combined_inventory(start, stop, output_dir,
     logger.info(f'Filtered inventory to station {requested_station_id}')
 
   logger.info("Getting geographic locations for each station")
-  geo_locations = _get_locations(inventory, output_dir, update=update_locations)
+  geo_locations = _get_locations(
+    inventory,
+    output_dir,
+    start=start,
+    stop=stop,
+    station_id=requested_station_id,
+    partial_output=partial_output,
+    update=update_locations,
+  )
 
   logger.info("Inventory summary")
   for entry in inventory:
     if entry['id'] in geo_locations:
       location = geo_locations[entry['id']]
-      start_location = location.get('start', {})
-      stop_location = location.get('stop', {})
-
-      if start_location.get('glat', '') != '' and start_location.get('glon', '') != '':
-        entry['geo_location_start'] = {
-          'lat': float(start_location['glat']),
-          'lon': float(start_location['glon']),
-        }
-
-      if stop_location.get('glat', '') != '' and stop_location.get('glon', '') != '':
-        entry['geo_location_stop'] = {
-          'lat': float(stop_location['glat']),
-          'lon': float(stop_location['glon']),
-        }
-
-      entry['geo_location_changed'] = location.get(
-        'geo_location_changed',
-        not location.get('nochange', False)
-      )
+      entry['location'] = location
 
     logger.info(f"{entry['id']}: ")
     logger.info(f"  startDate: {entry['startDate']}")
     logger.info(f"  stopDate:  {entry['stopDate']}")
     logger.info(f"  Unavailable: {len(entry.get('unavailable', []))}/{n_days} ({100-entry['available_percent']:.1f}%)")
-    logger.info(f"  Geographic changed: {entry.get('geo_location_changed', False)}")
-    if 'geo_location_start' in entry:
-      logger.info(f"  Geographic start (lat, lon): ({entry['geo_location_start']['lat']}°, {entry['geo_location_start']['lon']}°)")
-    if 'geo_location_stop' in entry:
-      logger.info(f"  Geographic stop (lat, lon):  ({entry['geo_location_stop']['lat']}°, {entry['geo_location_stop']['lon']}°)")
+    logger.info(f"  Geographic location changed: {entry.get('geo_location_changed', False)}")
+    for date_key in ['start', 'stop']:
+      if entry.get('location', {}).get(date_key, {}).get('error'):
+        msg = f"{date_key}Date: {entry['location'][date_key]['error']}"
+        logger.info(f"  Error fetching geographic location on {msg}")
+      elif entry.get('location', {}).get(date_key):
+        glat = entry['location'][date_key]['glat']
+        glon = entry['location'][date_key]['glon']
+        logger.info(f"  Geographic location on {date_key}Date (lat, lon): ({glat}°, {glon}°)")
 
-  _write_files(inventory, output_dir, station_id=requested_station_id)
+
+  _write_files(
+    inventory,
+    output_dir,
+    start=start,
+    stop=stop,
+    station_id=requested_station_id,
+    partial_output=partial_output,
+  )
 
   return inventory
 
@@ -177,10 +180,16 @@ def get_inventories(start, stop, output_dir='catalog', update=False, timeout=0.0
   return inventory_data
 
 
-def _get_locations(entry, output_dir, update=False):
+def _get_locations(entry, output_dir, start, stop, station_id=None, partial_output=False, update=False):
   from locations import fetch_locations
 
-  return fetch_locations(entry, output_dir, update=update)
+  output_file = output_dir / 'locations.json'
+  if station_id is not None:
+    output_file = output_dir / 'partial' / f'locations-{station_id}.json'
+  elif partial_output:
+    output_file = output_dir / 'partial' / f'locations-{start}-{stop}.json'
+
+  return fetch_locations(entry, output_dir, update=update, output_file=output_file)
 
 
 def _get_inventory(start, timeout=5):
@@ -202,7 +211,7 @@ def _get_inventory(start, timeout=5):
     return json.load(response)
 
 
-def _write_files(inventory, output_dir, station_id=None):
+def _write_files(inventory, output_dir, start, stop, station_id=None, partial_output=False):
 
   import json
   import gzip
@@ -211,9 +220,13 @@ def _write_files(inventory, output_dir, station_id=None):
   output_dir.mkdir(parents=True, exist_ok=True)
   timestamp = dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
   if station_id is None:
-    inventory_file = output_dir / 'inventory.json'
-    archive_file = output_dir / 'archive' / f'inventory-{timestamp}.json.gz'
-    archive_file.parent.mkdir(parents=True, exist_ok=True)
+    if partial_output:
+      inventory_file = output_dir / 'partial' / f'inventory-{start}-{stop}.json'
+      archive_file = None
+    else:
+      inventory_file = output_dir / 'inventory.json'
+      archive_file = output_dir / 'archive' / f'inventory-{timestamp}.json.gz'
+      archive_file.parent.mkdir(parents=True, exist_ok=True)
   else:
     inventory_file = output_dir / 'partial' / f'inventory-{station_id}.json'
     archive_file = None
@@ -256,6 +269,7 @@ def _date_range(start, stop, format='datetime'):
 
 def parse_args():
   import argparse
+  import sys
   import datetime as dt
   from pathlib import Path
 
@@ -269,13 +283,15 @@ def parse_args():
   epilog += '  python3 inventory.py\n'
   epilog += '  python3 inventory.py --update-inventory\n'
   epilog += '  python3 inventory.py --update-locations\n'
-  epilog += '  python3 inventory.py --start 2000-01-01 --stop 2000-01-03 --output-dir catalog --update-inventory --update-locations\n'
+  epilog += '  python3 inventory.py --start 2000-01-01 --stop 2000-01-03 --update-inventory --update-locations\n'
+  epilog += 'If --station-id, --start, or --stop is given, output is written to OUTPUT_DIR/partial\n'
   parser = argparse.ArgumentParser(
     description='Fetch daily SuperMAG inventories and create HAPI catalog response.',
     epilog=epilog,
     formatter_class=argparse.RawDescriptionHelpFormatter,
   )
 
+  output_dir = Path(__file__).resolve().parent.parent / 'data'
   parser.add_argument(
     '--start',
     default=default_start,
@@ -288,9 +304,9 @@ def parse_args():
   )
   parser.add_argument(
     '--output-dir',
-    default=Path(__file__).resolve().parent.parent / 'data',
+    default=output_dir,
     type=Path,
-    help='Base directory for outputs. Defaults to ../data relative to catalog.py.',
+    help=f'Base directory for outputs. Default: {_path_relative_to_cwd(output_dir)}.',
   )
   parser.add_argument(
     '--station-id',
@@ -324,7 +340,9 @@ def parse_args():
     action='store_true',
     help='Enable debug logging.',
   )
-  return parser.parse_args()
+  args = parser.parse_args()
+  args.partial_output = '--start' in sys.argv[1:] or '--stop' in sys.argv[1:]
+  return args
 
 
 if __name__ == '__main__':
@@ -342,6 +360,7 @@ if __name__ == '__main__':
     'update_inventory': args.update_inventory,
     'update_locations': args.update_locations,
     'station_id': args.station_id,
+    'partial_output': args.partial_output,
     'timeout': args.timeout,
     'delay': args.delay,
   }

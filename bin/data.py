@@ -4,6 +4,7 @@ from util import configure_logging, set_logging_level
 
 logger = configure_logging(__name__, level=logging.INFO)
 
+
 def get(url):
   import urllib3
   import importlib
@@ -53,16 +54,24 @@ def sm_data_parse_response(response, format=None):
     # JSON does not allow NaN
     longstring = re.sub(r'\b(?:NaN|nan|Infinity|inf|-Infinity|-inf)\b', 'null', longstring, flags=re.IGNORECASE)
     logger.debug(f"Raw response string after re.sub(): {longstring}")
+  except Exception as error:
+    return None, f"Error: '{error}' for response data: '{longstring}'"
   finally:
     response.release_conn()
 
   if format is None:
     return longstring
 
-  data_json = json.loads(longstring)
-  logger.debug(f"Parsed JSON data: {data_json}")
+  if len(longstring) == 0:
+    return {}, None
 
-  return data_json
+  try:
+    data_json = json.loads(longstring)
+    logger.debug(f"Parsed JSON data: {data_json}")
+  except Exception as error:
+    return None, f"Error: '{error}' for response data: '{longstring}'"
+
+  return data_json, None
 
 
 def reformat(data_json, format='list'):
@@ -158,12 +167,15 @@ def sm_data(userid, stationid, start, extent, baseline='yearly', delta='default'
 
   try:
     response = get(url)
-    data_json = sm_data_parse_response(response, format='json')
+    data_json, error = sm_data_parse_response(response, format='json')
+    if error is not None:
+      logger.debug(f"Failed to parse response for station {stationid}: {error}")
+      return None, {'url': url, 'error': str(error)}
   except Exception as error:
     logger.debug("sm_data() failed for station %s: %s", stationid, error)
-    return error
+    return None, {'url': url, 'error': str(error)}
 
-  return data_json
+  return data_json, None
 
 
 def hapi_data(dataset_id, start, stop, parameters, header=False):
@@ -208,9 +220,10 @@ def hapi_data(dataset_id, start, stop, parameters, header=False):
     'delta': delta,
     'extra_parameters': ['mlt', 'mag', 'geo', 'decl', 'sza']
   }
-  data = sm_data(user_id, station_id, start, extent, **kwargs)
 
-  if isinstance(data, Exception):
+  data, error = sm_data(user_id, station_id, start, extent, **kwargs)
+
+  if error is not None:
     return ''
 
   try:
