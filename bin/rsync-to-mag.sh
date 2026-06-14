@@ -1,1 +1,1 @@
-rsync -avz ../data weigel@mag.gmu.edu:~/www/git-data/server-python-general-supermag
+rsync -avz --delete ../data weigel@mag.gmu.edu:~/www/git-data/server-python-general-supermag

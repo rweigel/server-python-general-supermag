@@ -13,7 +13,7 @@ def catalog(inventory, output_dir):
         "name": "baselines",
         "contentURL": "https://supermag.jhuapl.edu/mag/?fidelity=low&tab=description",
         "content": "Subtract the daily variations and yearly trend (using Gjerloev, 2012)"
-      },
+      }
   ]
 
   parameters = [
@@ -104,13 +104,9 @@ if __name__ == "__main__":
   import json
   import pathlib
 
-  if len(sys.argv) != 3:
-    print(f"Usage: {sys.argv[0]} <inventory.json> <output_dir>")
-    sys.exit(1)
-
   data_dir = pathlib.Path(__file__).resolve().parent.parent / "data"
   inventory_file = data_dir / "inventory.json"
-  catalog_file = data_dir / "catalog.json"
+  catalog_file = data_dir / "catalog-all.json"
 
   inventory = json.loads(inventory_file.read_text())
   catalog = catalog(inventory, data_dir)
