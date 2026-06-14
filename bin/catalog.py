@@ -1,6 +1,6 @@
 def catalog(inventory, output_dir):
 
-  description = "Baseline choices are 'baseline_none', 'baseline_yearly' (yearly trends removed), or 'baseline_all' (yearly and start value subtracted). Datasets ending in 'XYZ' are geographic coordinates (X=North, Y=East, Z=vertical down); 'NEZ' are local geomagnetic coordinates (N=North, E=East, Z=vertical down)."
+  description = "Baseline choices are 'baseline_none', 'baseline_yearly' (yearly trend removed), or 'baseline_all' (yearly trend and start value subtracted); see https://supermag.jhuapl.edu/mag/?fidelity=low&tab=description. Datasets ending in 'XYZ' are geographic coordinates (X=North, Y=East, Z=vertical down); 'NEZ' are local geomagnetic coordinates (N=North, E=East, Z=vertical down)."
   datasetCitation = 'https://supermag.jhuapl.edu/info/?page=rulesoftheroad'
   description_nez = 'N_geo, E_geo, Z_geo, the local geomagnetic N, E, Z vector components'
   description_xyz = 'N_geo, E_geo, Z_geo, the geographic N, E, Z vector components'
@@ -100,7 +100,6 @@ def catalog(inventory, output_dir):
 
 if __name__ == "__main__":
 
-  import sys
   import json
   import pathlib
 

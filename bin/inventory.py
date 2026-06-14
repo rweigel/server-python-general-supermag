@@ -16,43 +16,28 @@ Short tests:
   python inventory.py --start 1970-01-01 --stop 1970-01-10 --no-update
 """
 
+import logging
+format = '%(levelname)s:%(name)s:%(funcName)s(): %(message)s'
+format = '%(name)s:%(funcName)s(): %(message)s'
+format = '%(message)s'
+logging.basicConfig(level=logging.DEBUG, format=format)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 BASE_URL = "https://supermag.jhuapl.edu/lib/services/inventory.php"
 
 def create_combined_inventory(start, stop, output_dir):
 
-  import json
-  import datetime as dt
-
-  def _write_files(inventory, output_dir):
-    import gzip
-
-    output_dir.mkdir(parents=True, exist_ok=True)
-    inventory_file = output_dir / 'inventory.json'
-    timestamp = dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-    archive_file = output_dir / 'archive' / f'inventory-{timestamp}.json.gz'
-    archive_file.parent.mkdir(parents=True, exist_ok=True)
-
-    print(f'Writing {inventory_file} with {len(inventory)} stations')
-    with inventory_file.open('w') as stream:
-      json.dump(inventory, stream, indent=2)
-      stream.write('\n')
-
-    print(f'Writing {archive_file}')
-    with gzip.open(archive_file, 'wt') as stream:
-      json.dump(inventory, stream, indent=2)
-      stream.write('\n')
-
-
   inventories = get_inventories(args.start, args.stop, **kwargs)
 
-  print(f'Reading {len(inventories)} inventories')
+  logger.debug(f'Parsing {len(inventories)} inventories')
 
   # Key: station id, value: dict of dates data available
   station_availability = {}
   for inventory_date, station_ids in inventories.items():
 
     s = '' if len(station_ids) == 1 else 's'
-    print(f'  Found {len(station_ids)} station{s} on {inventory_date}')
+    logger.debug(f'  Found {len(station_ids)} station{s} on {inventory_date}')
     for station_id in station_ids:
 
       if station_id not in station_availability:
@@ -60,8 +45,9 @@ def create_combined_inventory(start, stop, output_dir):
 
       station_availability[station_id].append(inventory_date)
 
-    s = '' if len(station_availability) == 1 else 's'
-  print(f'Creating inventory.json with {len(station_availability)} stations')
+
+  s = '' if len(station_availability) == 1 else 's'
+  logger.debug(f'Creating combined inventory with {len(station_availability)} stations')
   inventory = []
   for station_id, available_dates in station_availability.items():
     available_dates = sorted(available_dates)
@@ -81,8 +67,19 @@ def create_combined_inventory(start, stop, output_dir):
 
     inventory.append(entry)
 
+  logger.debug("Getting geographic locations for each station")
+  geo_locations = _get_locations(inventory, output_dir, update=False)
   for entry in inventory:
-    print(f"  {entry['id']}: Data range: {entry['startDate']}-{entry['stopDate']} | Unavailable: {len(entry.get('unavailable', []))}/{n_days} ({100-entry['available_percent']:.1f}%)")
+    if entry['id'] in geo_locations:
+      entry['geo_location'] = {
+        'lat': geo_locations[entry['id']][0],
+        'lon': geo_locations[entry['id']][1]
+      }
+
+    logger.debug(f"{entry['id']}: ")
+    logger.debug(f"  {entry['startDate']}-{entry['stopDate']}")
+    logger.debug(f"  Unavailable: {len(entry.get('unavailable', []))}/{n_days} ({100-entry['available_percent']:.1f}%)")
+    logger.debug(f"  Geographic (lat, lon): ({entry['geo_location']['lat']}°, {entry['geo_location']['lon']}°)")
 
   _write_files(inventory, output_dir)
 
@@ -119,11 +116,11 @@ def get_inventories(start, stop, output_dir='catalog', update=False, timeout=0.0
   for current in _date_range(start, stop):
 
     file_date = current.strftime('%Y-%m-%d')
-    print("Getting inventory for {}".format(file_date))
+    logger.debug("Getting inventory for {}".format(file_date))
 
     output_file = inventory_file_path(inventory_dir, current)
     if output_file.exists() and not update:
-      print(f'  Found cache: {output_file.relative_to(output_dir)}')
+      logger.debug(f'  Found cache: {output_file.relative_to(output_dir)}')
       with output_file.open() as stream:
         import json
         payload = json.load(stream)
@@ -137,10 +134,21 @@ def get_inventories(start, stop, output_dir='catalog', update=False, timeout=0.0
     requested += 1
     stations = payload.get('stations', []) if isinstance(payload, dict) else []
     output_file = write_inventory_file(inventory_dir, current, payload)
-    print(f'  {output_file.relative_to(output_dir)}: {len(stations)} stations')
+    logger.debug(f'  {output_file.relative_to(output_dir)}: {len(stations)} stations')
     inventory_data[file_date] = payload['stations'] if isinstance(payload, dict) else []
 
   return inventory_data
+
+
+def _get_locations(entry, output_dir, update=False):
+  from locations import fetch_locations
+  location_list = fetch_locations(entry, output_dir, update=update)
+  geo_locations = {}
+  for location in location_list:
+    station_id, glat, glon = location
+    if glat != '' and glon != '':
+      geo_locations[station_id] = (float(glat), float(glon))
+  return geo_locations
 
 
 def _get_inventory(start, timeout=5):
@@ -157,9 +165,32 @@ def _get_inventory(start, timeout=5):
     })
     return f'{BASE_URL}?{query}'
 
-  print(f"  Fetching {inventory_url(start)}")
+  logger.debug(f"  Fetching {inventory_url(start)}")
   with urlopen(inventory_url(start), timeout=timeout) as response:
     return json.load(response)
+
+
+def _write_files(inventory, output_dir):
+
+  import json
+  import gzip
+  import datetime as dt
+
+  output_dir.mkdir(parents=True, exist_ok=True)
+  inventory_file = output_dir / 'inventory.json'
+  timestamp = dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+  archive_file = output_dir / 'archive' / f'inventory-{timestamp}.json.gz'
+  archive_file.parent.mkdir(parents=True, exist_ok=True)
+
+  logger.debug(f'Writing {inventory_file.relative_to(output_dir)} with {len(inventory)} stations')
+  with inventory_file.open('w') as stream:
+    json.dump(inventory, stream, indent=2)
+    stream.write('\n')
+
+  logger.debug(f'Writing {archive_file.relative_to(output_dir)} with {len(inventory)} stations')
+  with gzip.open(archive_file, 'wt') as stream:
+    json.dump(inventory, stream, indent=2)
+    stream.write('\n')
 
 
 def _date_range(start, stop, format='datetime'):

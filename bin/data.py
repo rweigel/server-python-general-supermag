@@ -2,7 +2,6 @@ import logging
 
 format = '%(levelname)s:%(name)s:%(funcName)s(): %(message)s'
 format = '%(name)s:%(funcName)s(): %(message)s'
-
 logging.basicConfig(level=logging.DEBUG, format=format)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

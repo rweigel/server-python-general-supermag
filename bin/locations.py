@@ -1,38 +1,31 @@
 """
 Usage:
   python locations.py --help
+  python locations.py
 
-Read ../data/inventory.json and fetch one minute of data on each station's
-last available day to get geographic latitude and longitude.
+Reads ../data/inventory.json and fetch one minute of data on each station's
+last available day to get geographic latitude and longitude. Writes results
+to ../data/locations.csv.
 """
 
+def get_location(entry, output_dir, user_id='superhapi', update=False):
 
-def read_locations_csv(output_file):
-  import csv
+  location = fetch_locations([entry], output_dir, user_id=user_id, update=update)
+  return location[0][1:]
 
-  locations = {}
-  if not output_file.exists():
-    return locations
-
-  with output_file.open(newline='') as stream:
-    reader = csv.reader(stream)
-    for row in reader:
-      if len(row) < 3:
-        continue
-      station_id, glat, glon = row[0], row[1], row[2]
-      locations[station_id] = [station_id, glat, glon]
-
-  return locations
-
-
-def fetch_locations(inventory, existing_locations, user_id='superhapi', update=False):
+def fetch_locations(inventory, output_dir, user_id='superhapi', update=False):
   from data import sm_data
+
+  output_file = output_dir / 'locations.csv'
+  existing_locations = _read_locations(output_file)
 
   locations = []
   for entry in inventory:
     station_id = entry['id']
+
     existing_row = existing_locations.get(station_id)
     if existing_row and existing_row[1] != '' and existing_row[2] != '' and not update:
+      print(f"Station {station_id} already has location, skipping fetch.")
       locations.append(existing_row)
       continue
 
@@ -60,7 +53,49 @@ def fetch_locations(inventory, existing_locations, user_id='superhapi', update=F
 
     locations.append([station_id, first_row['glat'], first_row['glon']])
 
+  _write_locations(locations, output_file)
+
   return locations
+
+
+def _read_locations(output_file):
+  import csv
+
+  locations = {}
+  if not output_file.exists():
+    print(f"No existing locations file found at {output_file}, starting with empty locations.")
+    return locations
+  else:
+    print(f"Using existing locations from {output_file}")
+
+  with output_file.open(newline='') as stream:
+    reader = csv.reader(stream)
+    for row in reader:
+      if len(row) < 3:
+        continue
+      station_id, glat, glon = row[0], row[1], row[2]
+      locations[station_id] = [station_id, glat, glon]
+
+  return locations
+
+
+def _write_locations(locations, output_file):
+  import csv
+
+  output_file.parent.mkdir(parents=True, exist_ok=True)
+  with output_file.open('w', newline='') as stream:
+    writer = csv.writer(stream)
+    for location in locations:
+      writer.writerow(location)
+
+  print(f'Wrote {output_file} with {len(locations)} station locations')
+
+  # Print missing locations to console
+  missing_locations = [loc for loc in locations if loc[1] == '' or loc[2] == '']
+  if missing_locations:
+    print(f'Missing locations for {len(missing_locations)} stations:')
+    for loc in missing_locations:
+      print(f'  Station ID: {loc[0]}')
 
 
 def parse_args():
@@ -77,10 +112,10 @@ def parse_args():
     help='Path to combined inventory.json file.',
   )
   parser.add_argument(
-    '--output-file',
-    default=Path(__file__).resolve().parent.parent / 'data' / 'locations.csv',
+    '--output-dir',
+    default=Path(__file__).resolve().parent.parent / 'data',
     type=Path,
-    help='Path to write locations CSV output.',
+    help='Path to write locations.csv file.',
   )
   parser.add_argument(
     '--update',
@@ -91,26 +126,12 @@ def parse_args():
 
 
 if __name__ == '__main__':
-  import csv
   import json
 
   args = parse_args()
 
+  print(f"Reading {args.inventory_file}")
   inventory = json.loads(args.inventory_file.read_text())
-  locations = read_locations_csv(args.output_file)
-  locations = fetch_locations(inventory, locations, update=args.update)
 
-  args.output_file.parent.mkdir(parents=True, exist_ok=True)
-  with args.output_file.open('w', newline='') as stream:
-    writer = csv.writer(stream)
-    for location in locations:
-      writer.writerow(location)
-
-  print(f'Wrote {args.output_file} with {len(locations)} station locations')
-
-  # Print missing locations to console
-  missing_locations = [loc for loc in locations if loc[1] == '' or loc[2] == '']
-  if missing_locations:
-    print(f'Missing locations for {len(missing_locations)} stations:')
-    for loc in missing_locations:
-      print(f'  Station ID: {loc[0]}')
+  print(f"Found {len(inventory)} stations")
+  locations = fetch_locations(inventory, args.output_dir, update=args.update)
