@@ -1,0 +1,77 @@
+2026-07-29T09:01:29.170005Z INFO  catalog Generating SuperMAG HAPI catalog
+2026-07-29T09:01:29.170087Z INFO  catalog   Applying filters:
+2026-07-29T09:01:29.170119Z INFO  catalog     stations with start date 1970-01-01 or after
+2026-07-29T09:01:29.170137Z INFO  catalog     stations with stop date 1970-01-03 or before
+2026-07-29T09:01:29.170152Z INFO  catalog Getting inventory
+2026-07-29T09:01:29.172458Z INFO  catalog Output directory: ./../data
+2026-07-29T09:01:29.172510Z INFO  catalog Preparing inventory on 3 days from 1970-01-01 to 1970-01-03
+2026-07-29T09:01:29.172530Z INFO  catalog   Using cached inventory files if available
+2026-07-29T09:01:29.172546Z INFO  catalog Preparing inventory for days in year 1970
+2026-07-29T09:01:29.483688Z INFO  catalog Converting 3 by-day inventory to by-id inventories
+2026-07-29T09:01:29.483833Z INFO  catalog   2 stations in requested date range
+2026-07-29T09:01:29.483879Z INFO  catalog Restructuring inventory information
+2026-07-29T09:01:29.483919Z INFO  catalog   Adding {start,stop}Date and availability info to 2 stations
+2026-07-29T09:01:29.484093Z INFO  catalog Total station-days: 6 (6 x 200KB/day = 0.0006 GB)
+2026-07-29T09:01:29.484333Z INFO  catalog Getting all station info
+2026-07-29T09:01:29.581424Z INFO  catalog   Station info has 599 stations
+2026-07-29T09:01:29.581600Z INFO  catalog Adding station info to inventory entries
+2026-07-29T09:01:29.582921Z INFO  catalog Writing ./../data/stations/stations.json
+2026-07-29T09:01:29.586226Z INFO  catalog Writing ./../data/stations/archive/stations-2026-07-29T13:01:29Z.json.gz
+2026-07-29T09:01:29.595101Z INFO  catalog Getting sample data and geographic locations for each station on start and stop dates (using cached data, if available)
+2026-07-29T09:01:30.322187Z INFO  catalog DRV summary:
+2026-07-29T09:01:30.322391Z INFO  catalog   first record
+2026-07-29T09:01:30.322466Z INFO  catalog      timestamp: 1970-01-01T00:00Z
+2026-07-29T09:01:30.322533Z INFO  catalog      location:  {'glon': 140.009995, 'glat': -66.669998}
+2026-07-29T09:01:30.322598Z INFO  catalog      data:      {'tval': 0.0, 'ext': 60.0, 'iaga': 'DRV', 'glon': 140.009995, 'glat': -66.669998, 'mlt': None, 'mcolat': 90.0, 'decl': 180.0, 'sza': 50.547928, 'N': {'nez': 999999.0, 'geo': 999999.0}, 'E': {'nez': 999999.0, 'geo': 999999.0}, 'Z': {'nez': 999999.0, 'geo': 999999.0}}
+2026-07-29T09:01:30.322633Z INFO  catalog   last record
+2026-07-29T09:01:30.322664Z INFO  catalog      timestamp: 1970-01-03T23:59Z
+2026-07-29T09:01:30.322696Z INFO  catalog      location:  {'glon': 140.009995, 'glat': -66.669998}
+2026-07-29T09:01:30.322731Z INFO  catalog      data:      {'tval': 259140.0, 'ext': 60.0, 'iaga': 'DRV', 'glon': 140.009995, 'glat': -66.669998, 'mlt': None, 'mcolat': 90.0, 'decl': 180.0, 'sza': 50.985714, 'N': {'nez': 999999.0, 'geo': 999999.0}, 'E': {'nez': 999999.0, 'geo': 999999.0}, 'Z': {'nez': 999999.0, 'geo': 999999.0}}
+2026-07-29T09:01:30.345727Z INFO  catalog PAF summary:
+2026-07-29T09:01:30.345859Z INFO  catalog   first record
+2026-07-29T09:01:30.345933Z INFO  catalog      timestamp: 1970-01-01T00:00Z
+2026-07-29T09:01:30.346002Z INFO  catalog      location:  {'glon': 70.260002, 'glat': -49.350006}
+2026-07-29T09:01:30.346065Z INFO  catalog      data:      {'tval': 0.0, 'ext': 60.0, 'iaga': 'PAF', 'glon': 70.260002, 'glat': -49.350006, 'mlt': None, 'mcolat': 90.0, 'decl': 180.0, 'sza': 85.028397, 'N': {'nez': 999999.0, 'geo': 999999.0}, 'E': {'nez': 999999.0, 'geo': 999999.0}, 'Z': {'nez': 999999.0, 'geo': 999999.0}}
+2026-07-29T09:01:30.346117Z INFO  catalog   last record
+2026-07-29T09:01:30.346163Z INFO  catalog      timestamp: 1970-01-03T23:59Z
+2026-07-29T09:01:30.346209Z INFO  catalog      location:  {'glon': 70.260002, 'glat': -49.350006}
+2026-07-29T09:01:30.346267Z INFO  catalog      data:      {'tval': 259140.0, 'ext': 60.0, 'iaga': 'PAF', 'glon': 70.260002, 'glat': -49.350006, 'mlt': 2.939582, 'mcolat': 148.461926, 'decl': -51.080906, 'sza': 85.577942, 'N': {'nez': 18662.291016, 'geo': 11719.907643}, 'E': {'nez': -5.347708, 'geo': -14523.253747}, 'Z': {'nez': -44918.816406, 'geo': -44918.816406}}
+2026-07-29T09:01:30.347652Z INFO  catalog Adding sample data and geographic locations for each station on start and stop dates to inventory entries
+2026-07-29T09:01:30.347789Z INFO  catalog Inventory summary:
+2026-07-29T09:01:30.347836Z INFO  catalog DRV: 
+2026-07-29T09:01:30.347867Z INFO  catalog   From inventory requests (and start/stop date updates from location requests):
+2026-07-29T09:01:30.347897Z INFO  catalog     startDate: 1970-01-01
+2026-07-29T09:01:30.347929Z INFO  catalog     stopDate: 1970-01-03
+2026-07-29T09:01:30.347962Z INFO  catalog     Percentage of days available: 100.0
+2026-07-29T09:01:30.347986Z INFO  catalog   From station information request:
+2026-07-29T09:01:30.348011Z INFO  catalog     name: Dumont Durville
+2026-07-29T09:01:30.348038Z INFO  catalog     operator: ['INTERMAGNET', 'BCMT']
+2026-07-29T09:01:30.348064Z INFO  catalog     glat: -66.67
+2026-07-29T09:01:30.348092Z INFO  catalog     glon: 140.01
+2026-07-29T09:01:30.348118Z INFO  catalog   From data requests:
+2026-07-29T09:01:30.348142Z INFO  catalog     description: First and last records for data request for all parameters on start and stop dates determined by the inventory.
+2026-07-29T09:01:30.348168Z INFO  catalog     startDate: {'reported': '1970-01-01'}
+2026-07-29T09:01:30.348192Z INFO  catalog     stopDate: {'reported': '1970-01-03'}
+2026-07-29T09:01:30.348231Z INFO  catalog     firstRecord: {'timestamp': '1970-01-01T00:00Z', 'url': 'https://supermag.jhuapl.edu/services/data-api.php?python&nohead&logon=superhapi&start=1970-01-01&extent=86400&station=DRV&start=1970-01-01&extent=86400&baseline=none&delta=none&mlt&geo&decl&sza', 'location': {'glon': 140.009995, 'glat': -66.669998}, 'data': {'tval': 0.0, 'ext': 60.0, 'iaga': 'DRV', 'glon': 140.009995, 'glat': -66.669998, 'mlt': None, 'mcolat': 90.0, 'decl': 180.0, 'sza': 50.547928, 'N': {'nez': 999999.0, 'geo': 999999.0}, 'E': {'nez': 999999.0, 'geo': 999999.0}, 'Z': {'nez': 999999.0, 'geo': 999999.0}}}
+2026-07-29T09:01:30.348280Z INFO  catalog     lastRecord: {'timestamp': '1970-01-03T23:59Z', 'url': 'https://supermag.jhuapl.edu/services/data-api.php?python&nohead&logon=superhapi&start=1970-01-03&extent=86400&station=DRV&start=1970-01-03&extent=86400&baseline=none&delta=none&mlt&geo&decl&sza', 'location': {'glon': 140.009995, 'glat': -66.669998}, 'data': {'tval': 259140.0, 'ext': 60.0, 'iaga': 'DRV', 'glon': 140.009995, 'glat': -66.669998, 'mlt': None, 'mcolat': 90.0, 'decl': 180.0, 'sza': 50.985714, 'N': {'nez': 999999.0, 'geo': 999999.0}, 'E': {'nez': 999999.0, 'geo': 999999.0}, 'Z': {'nez': 999999.0, 'geo': 999999.0}}}
+2026-07-29T09:01:30.348323Z INFO  catalog PAF: 
+2026-07-29T09:01:30.348350Z INFO  catalog   From inventory requests (and start/stop date updates from location requests):
+2026-07-29T09:01:30.348378Z INFO  catalog     startDate: 1970-01-01
+2026-07-29T09:01:30.348402Z INFO  catalog     stopDate: 1970-01-03
+2026-07-29T09:01:30.348426Z INFO  catalog     Percentage of days available: 100.0
+2026-07-29T09:01:30.348451Z INFO  catalog   From station information request:
+2026-07-29T09:01:30.348474Z INFO  catalog     name: Port aux Francias
+2026-07-29T09:01:30.348500Z INFO  catalog     operator: ['INTERMAGNET', 'BCMT']
+2026-07-29T09:01:30.348524Z INFO  catalog     glat: -49.35
+2026-07-29T09:01:30.348548Z INFO  catalog     glon: 70.26
+2026-07-29T09:01:30.348571Z INFO  catalog   From data requests:
+2026-07-29T09:01:30.348594Z INFO  catalog     description: First and last records for data request for all parameters on start and stop dates determined by the inventory.
+2026-07-29T09:01:30.348618Z INFO  catalog     startDate: {'reported': '1970-01-01'}
+2026-07-29T09:01:30.348640Z INFO  catalog     stopDate: {'reported': '1970-01-03'}
+2026-07-29T09:01:30.348674Z INFO  catalog     firstRecord: {'timestamp': '1970-01-01T00:00Z', 'url': 'https://supermag.jhuapl.edu/services/data-api.php?python&nohead&logon=superhapi&start=1970-01-01&extent=86400&station=PAF&start=1970-01-01&extent=86400&baseline=none&delta=none&mlt&geo&decl&sza', 'location': {'glon': 70.260002, 'glat': -49.350006}, 'data': {'tval': 0.0, 'ext': 60.0, 'iaga': 'PAF', 'glon': 70.260002, 'glat': -49.350006, 'mlt': None, 'mcolat': 90.0, 'decl': 180.0, 'sza': 85.028397, 'N': {'nez': 999999.0, 'geo': 999999.0}, 'E': {'nez': 999999.0, 'geo': 999999.0}, 'Z': {'nez': 999999.0, 'geo': 999999.0}}}
+2026-07-29T09:01:30.348722Z INFO  catalog     lastRecord: {'timestamp': '1970-01-03T23:59Z', 'url': 'https://supermag.jhuapl.edu/services/data-api.php?python&nohead&logon=superhapi&start=1970-01-03&extent=86400&station=PAF&start=1970-01-03&extent=86400&baseline=none&delta=none&mlt&geo&decl&sza', 'location': {'glon': 70.260002, 'glat': -49.350006}, 'data': {'tval': 259140.0, 'ext': 60.0, 'iaga': 'PAF', 'glon': 70.260002, 'glat': -49.350006, 'mlt': 2.939582, 'mcolat': 148.461926, 'decl': -51.080906, 'sza': 85.577942, 'N': {'nez': 18662.291016, 'geo': 11719.907643}, 'E': {'nez': -5.347708, 'geo': -14523.253747}, 'Z': {'nez': -44918.816406, 'geo': -44918.816406}}}
+2026-07-29T09:01:30.349567Z INFO  catalog Writing ./../data/inventory/partial/inventory-1970-01-01-1970-01-03.json
+2026-07-29T09:01:30.350425Z INFO  catalog Building catalog from inventory
+2026-07-29T09:01:30.352013Z INFO  catalog Built catalog with 12 datasets from 2 magnetometer stations
+2026-07-29T09:01:30.352863Z INFO  catalog Writing ./../data/catalog/partial/catalog-1970-01-01-1970-01-03.json
+2026-07-29T09:01:30.354719Z INFO  catalog Wrote file 'catalog.log' (9565 bytes)

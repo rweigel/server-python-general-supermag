@@ -1,0 +1,36 @@
+{
+  "path": "/hapi",
+  "ENV": {
+    "DATA_DIR": "data",
+    "CACHE_DIR": "cache",
+    "BIN_DIR": "bin"
+  },
+  "functions": {
+    "catalog": "$BIN_DIR/catalog.py --depth={depth} --config={config}",
+    "info": "$BIN_DIR/info.py --dataset={dataset} --config={config}",
+    "data": "$BIN_DIR/data.py --dataset={dataset} --parameters={parameters} --start={start} --stop={stop} --format={format} --config={config}"
+  },
+  "about": {
+    "id": "SuperMAG",
+    "title": "SuperMAG",
+    "contact": "Sandy Antunes",
+    "contactID": "Sandy.Antunes@jhuapl.edu",
+    "x_SPASE": {
+      "PersonID": "spase://SMWG/Sandy.Antunes",
+      "RepositoryID": "spase://SMWG/Repository/JHU_APL"
+    },
+    "dataTest": {
+      "name": "Ping Test",
+      "query": {
+        "dataset": "indices_all",
+        "start": "2018-01-18T00:00Z",
+        "stop": "2018-01-19T00:00Z",
+        "parameters": "SML"
+      }
+    }
+  },
+  "capabilities": {
+    "outputFormats": ["csv"],
+    "catalogDepthOptions": ["dataset", "all"]
+  }
+}
