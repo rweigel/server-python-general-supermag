@@ -1,17 +1,31 @@
 
-def catalog(depth=None, config=None, dataset=None):
-  import os
-  import pathlib
+import logging
 
-  os.environ.setdefault('SUPERMAG_LOG_DIR', str(pathlib.Path(__file__).parent / "../log"))
+logger = logging.getLogger(__name__)
+
+def catalog(depth=None, config=None, dataset=None):
 
   import supermag
+
+  options = (config or {}).get("options", {})
+
+  def _resolve_dir(path):
+    import pathlib
+    path = pathlib.Path(path)
+    if not path.is_absolute():
+      path = pathlib.Path(__file__).parent / ".." / path
+    return path
+
+  supermag.util.set_log_dir(_resolve_dir(options.get("LOG_DIR", "log")))
+  logging.basicConfig(level=options.get("LOG_LEVEL", None))
+  if "LOG_LEVEL" in options:
+    supermag.util.logger.setLevel(options["LOG_LEVEL"])
 
   args = {
           "start": "1970-01-01",
           "stop": "1970-01-03",
 
-          "output_dir": pathlib.Path(__file__).parent / "../data",
+          "output_dir": _resolve_dir(options.get("DATA_DIR", "data")),
 
           "update_inventory": False,
 

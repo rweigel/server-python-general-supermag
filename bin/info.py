@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 def info(dataset, config=None):
 
   if __package__:
@@ -5,6 +8,8 @@ def info(dataset, config=None):
   else:
     from catalog import catalog
 
+  options = (config or {}).get("options", {})
+  logging.basicConfig(level=options.get("LOG_LEVEL", None))
   resp = catalog(depth='all', config=config, dataset=dataset)
 
   return resp

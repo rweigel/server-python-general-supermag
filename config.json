@@ -1,14 +1,17 @@
 {
   "path": "/hapi",
   "ENV": {
-    "DATA_DIR": "data",
-    "CACHE_DIR": "cache",
     "BIN_DIR": "bin"
   },
+  "options": {
+    "DATA_DIR": "data",
+    "CACHE_DIR": "cache",
+    "LOG_DIR": "log"
+  },
   "functions": {
-    "catalog": "$BIN_DIR/catalog.py --depth={depth} --config={config}",
-    "info": "$BIN_DIR/info.py --dataset={dataset} --config={config}",
-    "data": "$BIN_DIR/data.py --dataset={dataset} --parameters={parameters} --start={start} --stop={stop} --format={format} --config={config}"
+    "catalog": "",
+    "info": "",
+    "data": ""
   },
   "about": {
     "id": "SuperMAG",
